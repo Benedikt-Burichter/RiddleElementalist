@@ -6,7 +6,7 @@ Created on Mon Oct 21 09:20:14 2019
 """
 
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QPushButton,
-                             QHBoxLayout, QGridLayout, QLabel)
+                             QHBoxLayout, QVBoxLayout, QGridLayout, QLabel)
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont
 import sys
@@ -35,22 +35,24 @@ class App(QMainWindow):
         main_widget = QWidget()
         main_layout = QGridLayout()
         main_widget.setLayout(main_layout)
-        main_layout.addWidget(QLabel('Transformations'), 0, 0)
-        main_layout.addWidget(QLabel('Outputs'), 1, 0)
+#        main_layout.addWidget(QLabel('Transformations'), 0, 0)
+#        main_layout.addWidget(QLabel('Outputs'), 1, 0)
         main_layout.addWidget(QLabel('sources'), 2, 0)
-        transformations = ['add same', 'add same', 'two plus three',
-                           'one plus one', 'add w', 'filter x']
-        for i, t in enumerate(transformations):
-            button1 = QPushButton(t)
-            button2 = QPushButton('')
-            button1.clicked.connect(lambda s, a=i: self.operators[a].w(self.inputs[0], self.inputs[1]))
-            button1.clicked.connect(lambda s, a=i, b=button2: b.setText(self.operators[a].output))
-            button1.clicked.connect(lambda s, a=i: self.check(self.operators[a]))
-            button1.clicked.connect(lambda: self.reset_index())
-            button2.clicked.connect(lambda s, a=i: self.set_input(self.operators[a]))
-            button2.clicked.connect(lambda s, b=button2: b.setText(''))
-            main_layout.addWidget(button1, 0, i+1)
-            main_layout.addWidget(button2, 1, i+1)
+#        transformations = ['add same', 'add same', 'two plus three',
+#                           'one plus one', 'add w', 'filter x']
+#        for i, t in enumerate(transformations):
+#            button1 = QPushButton(t)
+#            button2 = QPushButton('')
+#            button1.clicked.connect(lambda s, a=i: self.operators[a].w(self.inputs[0], self.inputs[1]))
+#            button1.clicked.connect(lambda s, a=i, b=button2: b.setText(self.operators[a].output))
+#            button1.clicked.connect(lambda s, a=i: self.check(self.operators[a]))
+#            button1.clicked.connect(lambda: self.reset_index())
+#            button2.clicked.connect(lambda s, a=i: self.set_input(self.operators[a]))
+#            button2.clicked.connect(lambda s, b=button2: b.setText(''))
+#            main_layout.addWidget(button1, 0, i+1)
+#            main_layout.addWidget(button2, 1, i+1)
+        for index, operator in enumerate(self.operators):
+            main_layout.addWidget(operator.get_ui_elements(), 0,index)
 
         for i, s in enumerate(self.sources):
             button = QPushButton(s.value)
@@ -73,10 +75,37 @@ class App(QMainWindow):
             self.setCentralWidget(QLabel('You Won!', font = QFont('SanSerif', 70)))
 
 
-
 class operator():
-    def __init__(self):
-        self.output = ''
+    def __init__(self, n_inputs, n_outputs):
+        self.name = 'operator'
+        self.inputs = []
+        self.outputs = []
+        for i in range(n_inputs):
+            self.inputs.append(str(i))
+
+        for i in range(n_outputs):
+            self.outputs.append('')
+
+        self.ui_elements = QWidget()
+        layout = QVBoxLayout()
+        self.ui_elements.setLayout(layout)
+        top_widget = QWidget()
+        top_layout = QHBoxLayout()
+        top_widget.setLayout(top_layout)
+        button = QPushButton(self.name)
+        bottom_widget = QWidget()
+        bottom_layout = QHBoxLayout()
+        bottom_widget.setLayout(bottom_layout)
+        layout.addWidget(top_widget)
+        layout.addWidget(button)
+        layout.addWidget(bottom_widget)
+        for i in self.inputs:
+            top_layout.addWidget(QLabel(i))
+        for i in self.outputs:
+            bottom_layout.addWidget(QPushButton())
+
+    def get_ui_elements(self):
+        return self.ui_elements
 
     def get_output(self):
         temp = self.output
@@ -101,9 +130,7 @@ class base():
 class add_same(operator):
 
     def __init__(self):
-        self.input1 = ''
-        self.input2 = ''
-        self.output = ''
+        operator.__init__(self, 2, 1)
 
     def work(self, input1, input2):
         input1 = ''.join(sorted(input1))
@@ -117,9 +144,7 @@ class add_same(operator):
 class two_plus_three(operator):
 
     def __init__(self):
-        self.input1 = ''
-        self.input2 = ''
-        self.output = ''
+        operator.__init__(self, 2, 1)
 
     def work(self, input1, input2):
         len1 = len(input1)
@@ -131,9 +156,7 @@ class two_plus_three(operator):
 class one_plus_one(operator):
 
     def __init__(self):
-        self.input1 = ''
-        self.input2 = ''
-        self.output = ''
+        operator.__init__(self, 2, 1)
 
     def work(self, input1, input2):
         len1 = len(input1)
@@ -145,9 +168,7 @@ class one_plus_one(operator):
 class add(operator):
 
     def __init__(self):
-        self.input1 = ''
-        self.input2 = ''
-        self.output = ''
+        operator.__init__(self, 2, 1)
 
     def work(self, input1, input2):
         self.output = ''.join(sorted(input1 + input2))
@@ -156,9 +177,7 @@ class add(operator):
 class add_w(operator):
 
     def __init__(self):
-        self.input1 = ''
-        self.input2 = ''
-        self.output = ''
+        operator.__init__(self, 2, 1)
 
     def work(self, input1, input2):
         if input1 == 'w' or input2 == 'w':
@@ -168,8 +187,7 @@ class add_w(operator):
 class Filter(operator):
 
     def __init__(self, target):
-        self.input1 = ''
-        self.output = ''
+        operator.__init__(self, 1, 1)
         self.target = target
 
     def work(self, input1, input2):
